@@ -1,0 +1,1632 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tourism | Plan Your Journey</title>
+
+  <!-- Fonts -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Poppins:wght@300;400;500;600&display=swap"
+    rel="stylesheet">
+
+  <!-- Custom CSS (No Bootstrap) -->
+  <link rel="stylesheet" href="style.css?v=3">
+
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+  <style>
+    /* New Feature Styles */
+
+    /* Wishlist Heart */
+    .wishlist-btn {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
+      backdrop-filter: blur(5px);
+      transition: all 0.3s ease;
+      z-index: 10;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+    }
+
+    .wishlist-btn:hover {
+      background: rgba(255, 255, 255, 0.4);
+      transform: scale(1.1);
+    }
+
+    .wishlist-btn.active {
+      color: #ff4757;
+      background: rgba(255, 255, 255, 0.8);
+    }
+
+    /* Map Section */
+    #map {
+      height: 500px;
+      width: 100%;
+      border-radius: 20px;
+      z-index: 1;
+    }
+
+    /* Weather Widget */
+    .weather-widget {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 15px;
+      padding: 15px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .weather-icon {
+      font-size: 2.5rem;
+      color: #ffd700;
+    }
+
+    .weather-info h4 {
+      margin: 0;
+      color: white;
+    }
+
+    .weather-info p {
+      margin: 0;
+      color: #ddd;
+      font-size: 0.9rem;
+    }
+
+    /* Reviews Section */
+    .review-section {
+      margin-top: 40px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      padding-top: 30px;
+    }
+
+    .star-rating {
+      color: #ffd700;
+      cursor: pointer;
+      font-size: 1.5rem;
+    }
+
+    .review-card {
+      background: rgba(0, 0, 0, 0.2);
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 15px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar-glass">
+    <div class="nav-brand">TOURISM</div>
+    <div class="nav-links">
+      <a href="#" onclick="display('sectionHome'); return false;" class="active">Home</a>
+      <a href="#" onclick="display('sectionAbout'); return false;">About</a>
+      <a href="#" onclick="display('sectionContact'); return false;">Contact</a>
+      <a href="#" onclick="display('sectionMap'); return false;">Map</a>
+      <a href="#" onclick="handleStartTrip(event)">Start Trip</a>
+
+      <!-- Auth Section -->
+      <a href="login.html" id="loginLink">Login</a>
+    </div>
+
+    <div class="nav-right" style="display: flex; align-items: center; gap: 20px;">
+      <div class="search-container">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" id="searchInput" placeholder="Search destinations...">
+      </div>
+
+      <div id="userProfile" class="user-profile-container d-none">
+        <div class="user-icon" onclick="toggleMenu()">J</div>
+        <div class="dropdown-menu" id="profileMenu">
+          <!-- Mobile Only Links -->
+          <a href="#" class="dropdown-item mobile-only" onclick="display('sectionAbout'); return false;"
+            style="display:none;"><i class="fas fa-info-circle"></i> About Us</a>
+          <a href="#" class="dropdown-item mobile-only" onclick="display('sectionContact'); return false;"
+            style="display:none;"><i class="fas fa-envelope"></i> Contact</a>
+          <a href="#" class="dropdown-item mobile-only" onclick="display('sectionMap'); return false;"
+            style="display:none;"><i class="fas fa-map-marked-alt"></i> Map Explore</a>
+          <div class="dropdown-item mobile-only" style="border-top: 1px solid #eee; margin-top: 5px; display:none;">
+          </div>
+
+          <a href="#" class="dropdown-item" onclick="showProfileInfo('Details'); return false;"><i
+              class="fas fa-user-circle"></i> Details</a>
+          <a href="#" class="dropdown-item" onclick="showProfileInfo('Trips'); return false;"><i
+              class="fas fa-plane"></i> Previous Trips</a>
+          <a href="#" class="dropdown-item" onclick="showProfileInfo('History'); return false;"><i
+              class="fas fa-history"></i> History</a>
+          <a href="#" class="dropdown-item" onclick="showProfileInfo('Wishlist'); return false;"><i
+              class="fas fa-heart"></i> Saved Places</a>
+          <a href="#" class="dropdown-item" onclick="showProfileInfo('Referrals'); return false;"><i
+              class="fas fa-gift"></i> Referrals</a>
+          <div class="dropdown-item" style="border-top: 1px solid #eee; margin-top: 5px;"></div>
+          <a href="#" class="dropdown-item" onclick="logout(); return false;"><i class="fas fa-sign-out-alt"></i> Log
+            Out</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Section: Home (Hero) -->
+  <section id="sectionHome" class="fade-in">
+    <div class="hero-container full-height">
+      <div class="hero-card glass-card">
+        <h1 class="hero-title">TOURISM</h1>
+        <p class="hero-subtitle">Plan your trip.</p>
+        <button class="btn-gradient" onclick="display('sectionFavouritePlaces')">Get Started</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section: Favourite Places -->
+  <section id="sectionFavouritePlaces" class="d-none fade-in">
+    <div class="content-container">
+      <h2 class="section-title">Favourite Places</h2>
+      <div class="places-grid">
+
+        <a href="#" onclick="display('detailTajMahal'); return false;" class="place-card glass-card"
+          style="text-decoration: none; color: inherit; position: relative;">
+          <button class="wishlist-btn" onclick="toggleWishlist('Taj Mahal', event)"><i
+              class="far fa-heart"></i></button>
+          <div class="place-info">
+            <h3>Taj Mahal</h3>
+            <p>If there was just one symbol to represent all of India, it would be the Taj Mahal.</p>
+          </div>
+          <img
+            src="https://images.unsplash.com/photo-1564507592333-c60657eea523?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80"
+            alt="Taj Mahal">
+        </a>
+
+        <a href="#" onclick="display('detailGoldenTemple'); return false;" class="place-card glass-card"
+          style="text-decoration: none; color: inherit; position: relative;">
+          <button class="wishlist-btn" onclick="toggleWishlist('Golden Temple', event)"><i
+              class="far fa-heart"></i></button>
+          <div class="place-info">
+            <h3>Golden Temple</h3>
+            <p>Amritsar is world-famous for the beautiful and highly revered Golden Temple.</p>
+          </div>
+          <img src="assets/golden_temple.png" alt="Golden Temple">
+        </a>
+
+        <a href="#" onclick="display('detailMysore'); return false;" class="place-card glass-card"
+          style="text-decoration: none; color: inherit; position: relative;">
+          <button class="wishlist-btn" onclick="toggleWishlist('Mysore Palace', event)"><i
+              class="far fa-heart"></i></button>
+          <div class="place-info">
+            <h3>Mysore Palace</h3>
+            <p>The Mysore Palace is a historical palace and the royal residence at Mysore.</p>
+          </div>
+          <img src="assets/mysore.png" alt="Mysore Palace">
+        </a>
+
+        <a href="#" onclick="display('detailVaranasi'); return false;" class="place-card glass-card"
+          style="text-decoration: none; color: inherit; position: relative;">
+          <button class="wishlist-btn" onclick="toggleWishlist('Varanasi Temple', event)"><i
+              class="far fa-heart"></i></button>
+          <div class="place-info">
+            <h3>Varanasi Temple</h3>
+            <p>Varanasi Temple is most famous Hindu temples dedicated to Lord Shiva.</p>
+          </div>
+          <img src="assets/varanasi.png" alt="Varanasi">
+        </a>
+
+        <a href="#" onclick="display('detailHaridwar'); return false;" class="place-card glass-card"
+          style="text-decoration: none; color: inherit; position: relative;">
+          <button class="wishlist-btn" onclick="toggleWishlist('Haridwar', event)"><i class="far fa-heart"></i></button>
+          <div class="place-info">
+            <h3>Haridwar</h3>
+            <p>Haridwar is a significant city located in the Uttarakhand state of India.</p>
+          </div>
+          <img src="assets/haridwar.png" alt="Haridwar">
+        </a>
+
+        <a href="#" onclick="display('detailKerala'); return false;" class="place-card glass-card"
+          style="text-decoration: none; color: inherit; position: relative;">
+          <button class="wishlist-btn" onclick="toggleWishlist('Kerala Backwaters', event)"><i
+              class="far fa-heart"></i></button>
+          <div class="place-info">
+            <h3>Kerala Backwaters</h3>
+            <p>Experience the serene backwaters and houseboats of Alleppey.</p>
+          </div>
+          <img src="assets/kerala.png" alt="Kerala Backwaters">
+        </a>
+
+        <a href="#" onclick="display('detailJaipur'); return false;" class="place-card glass-card"
+          style="text-decoration: none; color: inherit; position: relative;">
+          <button class="wishlist-btn" onclick="toggleWishlist('Jaipur', event)"><i class="far fa-heart"></i></button>
+          <div class="place-info">
+            <h3>Jaipur</h3>
+            <p>The Pink City, known for Hawa Mahal and royal architecture.</p>
+          </div>
+          <img src="assets/jaipur.png" alt="Jaipur">
+        </a>
+
+        <a href="#" onclick="display('detailLadakh'); return false;" class="place-card glass-card"
+          style="text-decoration: none; color: inherit; position: relative;">
+          <button class="wishlist-btn" onclick="toggleWishlist('Ladakh', event)"><i class="far fa-heart"></i></button>
+          <div class="place-info">
+            <h3>Ladakh</h3>
+            <p>Pangong Lake and the majestic mountains of the high Himalayas.</p>
+          </div>
+          <img src="assets/ladakh.png" alt="Ladakh">
+        </a>
+
+        <a href="#" onclick="display('detailGoa'); return false;" class="place-card glass-card"
+          style="text-decoration: none; color: inherit;">
+          <div class="place-info">
+            <h3>Goa Beaches</h3>
+            <p>Famous for its golden sands, nightlife, and Portuguese heritage.</p>
+          </div>
+          <img
+            src="https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80"
+            alt="Goa">
+        </a>
+
+        <a href="#" onclick="display('detailHampi'); return false;" class="place-card glass-card"
+          style="text-decoration: none; color: inherit;">
+          <div class="place-info">
+            <h3>Hampi</h3>
+            <p>A UNESCO World Heritage site with ancient ruins and boulders.</p>
+          </div>
+          <img
+            src="https://images.unsplash.com/photo-1600100598079-4299b9e6f363?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80"
+            alt="Hampi">
+        </a>
+
+        <a href="#" onclick="display('detailAndaman'); return false;" class="place-card glass-card"
+          style="text-decoration: none; color: inherit;">
+          <div class="place-info">
+            <h3>Andaman Islands</h3>
+            <p>Offers pristine blue waters and scuba diving.</p>
+          </div>
+          <img
+            src="https://images.unsplash.com/photo-1589308078059-be1415eab4c3?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80"
+            alt="Andaman">
+        </a>
+
+        <a href="#" onclick="display('detailUdaipur'); return false;" class="place-card glass-card"
+          style="text-decoration: none; color: inherit;">
+          <div class="place-info">
+            <h3>Udaipur</h3>
+            <p>The "City of Lakes" known for its lavish royal residences.</p>
+          </div>
+          <img
+            src="https://images.unsplash.com/photo-1595133642398-0c65691d1e4e?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80"
+            alt="Udaipur">
+        </a>
+
+        <a href="#" onclick="display('detailRishikesh'); return false;" class="place-card glass-card"
+          style="text-decoration: none; color: inherit;">
+          <div class="place-info">
+            <h3>Rishikesh</h3>
+            <p>Known as the Yoga Capital of the World and for river rafting.</p>
+          </div>
+          <img
+            src="https://images.unsplash.com/photo-1586526978516-7788476d0590?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80"
+            alt="Rishikesh">
+        </a>
+
+      </div>
+      <button class="btn-outline mt-5" onclick="display('sectionHome')">Back to Home</button>
+    </div>
+  </section>
+
+  <!-- Detailed Views -->
+
+  <!-- Taj Mahal Detail -->
+  <section id="detailTajMahal" class="d-none fade-in">
+    <div class="content-container">
+      <h1 class="detail-title">Taj Mahal</h1>
+      <div class="glass-card detail-card">
+        <div class="detail-image-grid">
+          <img
+            src="https://images.unsplash.com/photo-1564507592333-c60657eea523?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80"
+            alt="Taj Mahal 1">
+          <img
+            src="https://images.unsplash.com/photo-1524492412937-b28074a5d7da?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80"
+            alt="Taj Mahal 2">
+          <img
+            src="https://images.unsplash.com/photo-1548013146-72479768bada?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80"
+            alt="Taj Mahal 3">
+        </div>
+        <div class="detail-content">
+          <p class="lead">The Taj Mahal is considered to be the greatest architectural achievement in the whole range of
+            Indo-Islamic architecture.</p>
+          <div class="info-grid">
+            <div>
+              <h5>✨ Key Highlights</h5>
+              <ul>
+                <li>Commissioned in 1632 by Mughal Emperor Shah Jahan.</li>
+                <li>A masterpiece of Mughal architecture blending Persian, Islamic, and Indian styles.</li>
+                <li>Designated in 1983 for its outstanding universal value.</li>
+              </ul>
+            </div>
+            <div>
+              <h5>📍 Location & Reach</h5>
+              <p>Agra, Uttar Pradesh, India.</p>
+              <ul>
+                <li><strong>Road:</strong> Connected via Yamuna Expressway.</li>
+                <li><strong>Train:</strong> Agra Cantt is 6km away.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="mt-4 text-center">
+        <button onclick="display('sectionFavouritePlaces')" class="btn-outline mr-2">Back</button>
+        <button onclick="display('sectionHome')" class="btn-outline">Back to Home</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Golden Temple Detail -->
+  <section id="detailGoldenTemple" class="d-none fade-in">
+    <div class="content-container">
+      <h1 class="detail-title">Golden Temple</h1>
+      <div class="glass-card detail-card">
+        <div class="detail-image-grid desktop-grid-override">
+          <img src="assets/golden_temple.png" alt="Golden Temple 1">
+          <img src="assets/golden_temple.png" alt="Golden Temple 2">
+          <img src="assets/golden_temple.png" alt="Golden Temple 3">
+        </div>
+        <div class="detail-content">
+          <p class="lead">Amritsar is world-famous for the beautiful and highly revered Golden Temple.</p>
+          <div class="info-grid">
+            <div>
+              <h5>✨ Key Highlights</h5>
+              <ul>
+                <li>The holiest Gurdwara of Sikhism.</li>
+                <li>Stunning gold-plated architecture surrounded by a sacred pool.</li>
+                <li>Community kitchen (Langar) serving thousands daily.</li>
+              </ul>
+            </div>
+            <div>
+              <h5>📍 Location & Reach</h5>
+              <p>Amritsar, Punjab, India.</p>
+              <ul>
+                <li><strong>Air:</strong> Sri Guru Ram Dass Jee International Airport.</li>
+                <li><strong>Train:</strong> Amritsar Junction.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="mt-4 text-center">
+        <button onclick="display('sectionFavouritePlaces')" class="btn-outline mr-2">Back</button>
+        <button onclick="display('sectionHome')" class="btn-outline">Back to Home</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Mysore Palace Detail -->
+  <section id="detailMysore" class="d-none fade-in">
+    <div class="content-container">
+      <h1 class="detail-title">Mysore Palace</h1>
+      <div class="glass-card detail-card">
+        <div class="detail-image-grid desktop-grid-override">
+          <img src="assets/mysore.png" alt="Mysore Palace 1">
+          <img src="assets/mysore1.png" alt="Mysore Palace 2">
+          <img src="assets/mysore2.png" alt="Mysore Palace 3">
+        </div>
+        <div class="detail-content">
+          <p class="lead">The Mysore Palace is a historical palace and the royal residence at Mysore.</p>
+          <div class="info-grid">
+            <div>
+              <h5>✨ Key Highlights</h5>
+              <ul>
+                <li>Official residence of the Wadiyar dynasty.</li>
+                <li>Famous for its blend of Hindu, Mughal, Rajput, and Gothic styles.</li>
+                <li>Spectacularly illuminated during the Dasara festival.</li>
+              </ul>
+            </div>
+            <div>
+              <h5>📍 Location & Reach</h5>
+              <p>Mysore, Karnataka, India.</p>
+              <ul>
+                <li><strong>Air:</strong> Mysore Airport (Mandakalli).</li>
+                <li><strong>Train:</strong> Mysore Junction.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="mt-4 text-center">
+        <button onclick="display('sectionFavouritePlaces')" class="btn-outline mr-2">Back</button>
+        <button onclick="display('sectionHome')" class="btn-outline">Back to Home</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Varanasi Detail -->
+  <section id="detailVaranasi" class="d-none fade-in">
+    <div class="content-container">
+      <h1 class="detail-title">Varanasi</h1>
+      <div class="glass-card detail-card">
+        <div class="detail-image-grid desktop-grid-override">
+          <img src="assets/varanasi1.png" alt="Varanasi 1">
+          <img src="assets/varanasi2.png" alt="Varanasi 2">
+          <img src="assets/varanasi3.png" alt="Varanasi 3">
+        </div>
+        <div class="detail-content">
+          <p class="lead">Varanasi Temple is most famous Hindu temples dedicated to Lord Shiva.</p>
+          <div class="info-grid">
+            <div>
+              <h5>✨ Key Highlights</h5>
+              <ul>
+                <li>Kashi Vishwanath Temple, one of the 12 Jyotirlingas.</li>
+                <li>Ganga Aarti at Dashashwamedh Ghat.</li>
+                <li>One of the oldest continuously inhabited cities in the world.</li>
+              </ul>
+            </div>
+            <div>
+              <h5>📍 Location & Reach</h5>
+              <p>Varanasi, Uttar Pradesh, India.</p>
+              <ul>
+                <li><strong>Air:</strong> Lal Bahadur Shastri International Airport.</li>
+                <li><strong>Train:</strong> Varanasi Junction.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="mt-4 text-center">
+        <button onclick="display('sectionFavouritePlaces')" class="btn-outline mr-2">Back</button>
+        <button onclick="display('sectionHome')" class="btn-outline">Back to Home</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Haridwar Detail -->
+  <section id="detailHaridwar" class="d-none fade-in">
+    <div class="content-container">
+      <h1 class="detail-title">Haridwar</h1>
+      <div class="glass-card detail-card">
+        <div class="detail-image-grid desktop-grid-override">
+          <img src="assets/haridwar1.png" alt="Haridwar 1">
+          <img src="assets/haridwar 2.png" alt="Haridwar 2">
+          <img src="assets/haridwar 3.png" alt="Haridwar 3">
+        </div>
+        <div class="detail-content">
+          <p class="lead">Haridwar is a significant city located in the Uttarakhand state of India, known as the Gateway
+            to Gods.</p>
+          <div class="info-grid">
+            <div>
+              <h5>✨ Key Highlights</h5>
+              <ul>
+                <li>Har Ki Pauri, a famous ghat on the banks of the Ganges.</li>
+                <li>Evening Ganga Aarti ceremony.</li>
+                <li>Mansa Devi Temple atop the Bilwa Parvat.</li>
+              </ul>
+            </div>
+            <div>
+              <h5>📍 Location & Reach</h5>
+              <p>Haridwar, Uttarakhand, India.</p>
+              <ul>
+                <li><strong>Air:</strong> Jolly Grant Airport, Dehradun.</li>
+                <li><strong>Train:</strong> Haridwar Railway Station.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="mt-4 text-center">
+        <button onclick="display('sectionFavouritePlaces')" class="btn-outline mr-2">Back</button>
+        <button onclick="display('sectionHome')" class="btn-outline">Back to Home</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Kerala Detail -->
+  <section id="detailKerala" class="d-none fade-in">
+    <div class="content-container">
+      <h1 class="detail-title">Kerala Backwaters</h1>
+      <div class="glass-card detail-card">
+        <div class="detail-image-grid">
+          <img src="assets/kerala.png" alt="Kerala Backwaters 1">
+          <img src="assets/kerala.png" alt="Kerala Backwaters 2">
+          <img src="assets/kerala.png" alt="Kerala Backwaters 3">
+        </div>
+        <div class="detail-content">
+          <p class="lead">Known as 'God's Own Country', Kerala is famous for its serene backwaters, especially in
+            Alleppey.</p>
+          <div class="info-grid">
+            <div>
+              <h5>✨ Key Highlights</h5>
+              <ul>
+                <li>Traditional Houseboat stays (Kettuvallam).</li>
+                <li>Lush green palm-fringed canals.</li>
+                <li>Ayurvedic treatments and spas.</li>
+              </ul>
+            </div>
+            <div>
+              <h5>📍 Location & Reach</h5>
+              <p>Alleppey, Kerala, India.</p>
+              <ul>
+                <li><strong>Air:</strong> Cochin International Airport (75km).</li>
+                <li><strong>Train:</strong> Alappuzha Railway Station.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="mt-4 text-center">
+        <button onclick="display('sectionFavouritePlaces')" class="btn-outline mr-2">Back</button>
+        <button onclick="display('sectionHome')" class="btn-outline">Back to Home</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Jaipur Detail -->
+  <section id="detailJaipur" class="d-none fade-in">
+    <div class="content-container">
+      <h1 class="detail-title">Jaipur (Pink City)</h1>
+      <div class="glass-card detail-card">
+        <div class="detail-image-grid">
+          <img src="assets/jaipur.png" alt="Jaipur 1">
+          <img src="assets/jaipur.png" alt="Jaipur 2">
+          <img src="assets/jaipur.png" alt="Jaipur 3">
+        </div>
+        <div class="detail-content">
+          <p class="lead">Jaipur, the capital of Rajasthan, is known as the 'Pink City' due to the distinct color of its
+            buildings.</p>
+          <div class="info-grid">
+            <div>
+              <h5>✨ Key Highlights</h5>
+              <ul>
+                <li>Hawa Mahal (Palace of Winds).</li>
+                <li>Amber Fort and City Palace.</li>
+                <li>Rich Rajasthani culture and cuisine.</li>
+              </ul>
+            </div>
+            <div>
+              <h5>📍 Location & Reach</h5>
+              <p>Jaipur, Rajasthan, India.</p>
+              <ul>
+                <li><strong>Air:</strong> Jaipur International Airport.</li>
+                <li><strong>Road:</strong> Well connected via NH48.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="mt-4 text-center">
+        <button onclick="display('sectionFavouritePlaces')" class="btn-outline mr-2">Back</button>
+        <button onclick="display('sectionHome')" class="btn-outline">Back to Home</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Ladakh Detail -->
+  <section id="detailLadakh" class="d-none fade-in">
+    <div class="content-container">
+      <h1 class="detail-title">Ladakh</h1>
+      <div class="glass-card detail-card">
+        <div class="detail-image-grid">
+          <img src="assets/ladakh.png" alt="Ladakh 1">
+          <img src="assets/ladakh.png" alt="Ladakh 2">
+          <img src="assets/ladakh.png" alt="Ladakh 3">
+        </div>
+        <div class="detail-content">
+          <p class="lead">A land like no other with a superabundance of attractions to visit and phantasmagoric and
+            fabulous landscapes.</p>
+          <div class="info-grid">
+            <div>
+              <h5>✨ Key Highlights</h5>
+              <ul>
+                <li>Pangong Lake (Pangong Tso).</li>
+                <li>Nubra Valley and High Mountain Passes.</li>
+                <li>Ancient Buddhist Monasteries.</li>
+              </ul>
+            </div>
+            <div>
+              <h5>📍 Location & Reach</h5>
+              <p>Ladakh, India.</p>
+              <ul>
+                <li><strong>Air:</strong> Kushok Bakula Rimpochee Airport (Leh).</li>
+                <li><strong>Road:</strong> Manali-Leh Highway or Srinagar-Leh Highway.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="mt-4 text-center">
+        <button onclick="display('sectionFavouritePlaces')" class="btn-outline mr-2">Back</button>
+        <button onclick="display('sectionHome')" class="btn-outline">Back to Home</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Goa Detail -->
+  <section id="detailGoa" class="d-none fade-in">
+    <div class="content-container">
+      <h1 class="detail-title">Goa Beaches</h1>
+      <div class="glass-card detail-card">
+        <div class="detail-image-grid">
+          <img
+            src="https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80"
+            alt="Goa 1">
+          <img
+            src="https://images.unsplash.com/photo-1548261356-8a562ef2a912?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80"
+            alt="Goa 2">
+          <img
+            src="https://images.unsplash.com/photo-1596700772266-9b8893478985?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80"
+            alt="Goa 3">
+        </div>
+        <div class="detail-content">
+          <p class="lead">Goa is a state in western India with coastlines stretching along the Arabian Sea. It is famous
+            for its beaches, nightlife, and Portuguese architecture.</p>
+          <div class="info-grid">
+            <div>
+              <h5>✨ Key Highlights</h5>
+              <ul>
+                <li>Stunning beaches like Baga, Calangute, and Palolem.</li>
+                <li>Vibrant nightlife and beach shacks.</li>
+                <li>Basilica of Bom Jesus and heritage sites.</li>
+              </ul>
+            </div>
+            <div>
+              <h5>📍 Location & Reach</h5>
+              <p>Goa, India.</p>
+              <ul>
+                <li><strong>Air:</strong> Dabolim Airport (GOI) or Mopa Airport (GOX).</li>
+                <li><strong>Train:</strong> Madgaon or Thivim Railway Stations.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="mt-4 text-center">
+        <button onclick="display('sectionFavouritePlaces')" class="btn-outline mr-2">Back</button>
+        <button onclick="display('sectionHome')" class="btn-outline">Back to Home</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Hampi Detail -->
+  <section id="detailHampi" class="d-none fade-in">
+    <div class="content-container">
+      <h1 class="detail-title">Hampi</h1>
+      <div class="glass-card detail-card">
+        <div class="detail-image-grid">
+          <img
+            src="https://images.unsplash.com/photo-1600100598079-4299b9e6f363?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80"
+            alt="Hampi 1">
+          <img
+            src="https://images.unsplash.com/photo-1620766182966-c6eb3431d773?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80"
+            alt="Hampi 2">
+          <img
+            src="https://images.unsplash.com/photo-1602430099496-e263d9134a65?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80"
+            alt="Hampi 3">
+        </div>
+        <div class="detail-content">
+          <p class="lead">Hampi is an ancient village in the south Indian state of Karnataka. It’s dotted with numerous
+            ruined temple complexes from the Vijayanagara Empire.</p>
+          <div class="info-grid">
+            <div>
+              <h5>✨ Key Highlights</h5>
+              <ul>
+                <li>Virupaksha Temple and Vitthala Temple.</li>
+                <li>Iconic Stone Chariot.</li>
+                <li>Coracle rides in the Tungabhadra River.</li>
+              </ul>
+            </div>
+            <div>
+              <h5>📍 Location & Reach</h5>
+              <p>Hampi, Karnataka, India.</p>
+              <ul>
+                <li><strong>Air:</strong> Jindal Vijaynagar Airport (Vidyanagar).</li>
+                <li><strong>Train:</strong> Hospet Junction (13km away).</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="mt-4 text-center">
+        <button onclick="display('sectionFavouritePlaces')" class="btn-outline mr-2">Back</button>
+        <button onclick="display('sectionHome')" class="btn-outline">Back to Home</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Andaman Detail -->
+  <section id="detailAndaman" class="d-none fade-in">
+    <div class="content-container">
+      <h1 class="detail-title">Andaman & Nicobar Islands</h1>
+      <div class="glass-card detail-card">
+        <div class="detail-image-grid">
+          <img
+            src="https://images.unsplash.com/photo-1589308078059-be1415eab4c3?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80"
+            alt="Andaman 1">
+          <img
+            src="https://images.unsplash.com/photo-1519451241324-20b4ea2c4220?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80"
+            alt="Andaman 2">
+          <img
+            src="https://images.unsplash.com/photo-1513415564515-763d998811ee?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80"
+            alt="Andaman 3">
+        </div>
+        <div class="detail-content">
+          <p class="lead">The Andaman Islands are an Indian archipelago in the Bay of Bengal. These roughly 300 islands
+            are known for their palm-lined, white-sand beaches, mangroves and coral reefs.</p>
+          <div class="info-grid">
+            <div>
+              <h5>✨ Key Highlights</h5>
+              <ul>
+                <li>Radhanagar Beach (Havelock Island).</li>
+                <li>Cellular Jail National Memorial.</li>
+                <li>Scuba diving and snorkeling.</li>
+              </ul>
+            </div>
+            <div>
+              <h5>📍 Location & Reach</h5>
+              <p>Andaman & Nicobar Islands, India.</p>
+              <ul>
+                <li><strong>Air:</strong> Veer Savarkar International Airport (Port Blair).</li>
+                <li><strong>Sea:</strong> Ships from Chennai, Kolkata, and Vizag.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="mt-4 text-center">
+        <button onclick="display('sectionFavouritePlaces')" class="btn-outline mr-2">Back</button>
+        <button onclick="display('sectionHome')" class="btn-outline">Back to Home</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Udaipur Detail -->
+  <section id="detailUdaipur" class="d-none fade-in">
+    <div class="content-container">
+      <h1 class="detail-title">Udaipur</h1>
+      <div class="glass-card detail-card">
+        <div class="detail-image-grid">
+          <img
+            src="https://images.unsplash.com/photo-1595133642398-0c65691d1e4e?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80"
+            alt="Udaipur 1">
+          <img
+            src="https://images.unsplash.com/photo-1615836245337-f5b9b2303f10?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80"
+            alt="Udaipur 2">
+          <img
+            src="https://images.unsplash.com/photo-1587595431973-160d0d94add1?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80"
+            alt="Udaipur 3">
+        </div>
+        <div class="detail-content">
+          <p class="lead">Udaipur, formerly the capital of the Mewar Kingdom, is a city in the western Indian state of
+            Rajasthan. Founded by Maharana Udai Singh II in 1559, it’s set around a series of artificial lakes.</p>
+          <div class="info-grid">
+            <div>
+              <h5>✨ Key Highlights</h5>
+              <ul>
+                <li>City Palace complex.</li>
+                <li>Lake Pichola and Jag Mandir.</li>
+                <li>Saheliyon-ki-Bari.</li>
+              </ul>
+            </div>
+            <div>
+              <h5>📍 Location & Reach</h5>
+              <p>Udaipur, Rajasthan, India.</p>
+              <ul>
+                <li><strong>Air:</strong> Maharana Pratap Airport.</li>
+                <li><strong>Train:</strong> Udaipur City Railway Station.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="mt-4 text-center">
+        <button onclick="display('sectionFavouritePlaces')" class="btn-outline mr-2">Back</button>
+        <button onclick="display('sectionHome')" class="btn-outline">Back to Home</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Rishikesh Detail -->
+  <section id="detailRishikesh" class="d-none fade-in">
+    <div class="content-container">
+      <h1 class="detail-title">Rishikesh</h1>
+      <div class="glass-card detail-card">
+        <div class="detail-image-grid">
+          <img
+            src="https://images.unsplash.com/photo-1586526978516-7788476d0590?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80"
+            alt="Rishikesh 1">
+          <img
+            src="https://images.unsplash.com/photo-1569666018314-22b6bc90623a?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80"
+            alt="Rishikesh 2">
+          <img
+            src="https://images.unsplash.com/photo-1596022564756-78f9bd2c2d2d?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80"
+            alt="Rishikesh 3">
+        </div>
+        <div class="detail-content">
+          <p class="lead">Rishikesh is a city in India’s northern state of Uttarakhand, in the Himalayan foothills
+            beside the Ganges River. The river is considered holy, and the city is renowned as a center for studying
+            yoga and meditation.</p>
+          <div class="info-grid">
+            <div>
+              <h5>✨ Key Highlights</h5>
+              <ul>
+                <li>River Rafting in the Ganges.</li>
+                <li>Ram Jhula and Laxman Jhula.</li>
+                <li>Beatles Ashram.</li>
+              </ul>
+            </div>
+            <div>
+              <h5>📍 Location & Reach</h5>
+              <p>Rishikesh, Uttarakhand, India.</p>
+              <ul>
+                <li><strong>Air:</strong> Jolly Grant Airport, Dehradun (35km).</li>
+                <li><strong>Train:</strong> Rishikesh Railway Station.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="mt-4 text-center">
+        <button onclick="display('sectionFavouritePlaces')" class="btn-outline mr-2">Back</button>
+        <button onclick="display('sectionHome')" class="btn-outline">Back to Home</button>
+      </div>
+    </div>
+  </section>
+
+
+
+
+
+
+  <!-- Section: About -->
+  <section id="sectionAbout" class="d-none fade-in">
+    <div class="content-container">
+      <h2 class="section-title">About Us</h2>
+      <div class="glass-card detail-card" style="padding: 40px; margin-top: 0;">
+        <div class="row" style="align-items: center;">
+          <div class="col">
+            <h3 style="color: white; margin-bottom: 20px;">Our Journey</h3>
+            <p class="about-text">
+              Welcome to Tourism, your ultimate partner in exploring the breathtaking landscapes and rich cultural
+              heritage of the world. Founded in 2024, our mission is to make travel accessible, enjoyable, and
+              unforgettable for everyone.
+            </p>
+            <p class="about-text">
+              We specialize in curating personalized trips to India's most iconic destinations, from the snowy peaks of
+              Ladakh to the serene backwaters of Kerala. Our team of travel experts works tirelessly to ensure every
+              detail of your journey is perfect.
+            </p>
+            <div class="mt-4">
+              <button class="btn-gradient" onclick="display('sectionContact')">Contact Us</button>
+            </div>
+          </div>
+          <div class="col">
+            <img
+              src="https://images.unsplash.com/photo-1527631746610-bca00a040d60?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80"
+              alt="About Us" style="width: 100%; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section: Contact -->
+  <section id="sectionContact" class="d-none fade-in">
+    <div class="content-container">
+      <h2 class="section-title">Get in Touch</h2>
+      <div class="glass-card detail-card" style="padding: 40px; margin-top: 0;">
+        <div class="row">
+          <div class="col">
+            <h3 style="color: white; margin-bottom: 30px;">Contact Information</h3>
+            <div class="contact-info-item">
+              <i class="fas fa-map-marker-alt"></i>
+              <div>
+                <strong>Head Office</strong>
+                <p style="margin: 0; color: #ddd;">123 Tourism Plaza, New Delhi, India 110001</p>
+              </div>
+            </div>
+            <div class="contact-info-item">
+              <i class="fas fa-phone-alt"></i>
+              <div>
+                <strong>Phone</strong>
+                <p style="margin: 0; color: #ddd;">+91 98765 43210</p>
+              </div>
+            </div>
+            <div class="contact-info-item">
+              <i class="fas fa-envelope"></i>
+              <div>
+                <strong>Email</strong>
+                <p style="margin: 0; color: #ddd;">support@tourism.com</p>
+              </div>
+            </div>
+
+            <div class="mt-5">
+              <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d224345.83923192776!2d77.0688975472312!3d28.52728034389625!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390cfd5b347eb62d%3A0x52c2b7494e204dce!2sNew%20Delhi%2C%20Delhi!5e0!3m2!1sen!2sin!4v1614131558914!5m2!1sen!2sin"
+                width="100%" height="250" style="border:0; border-radius: 15px;" allowfullscreen=""
+                loading="lazy"></iframe>
+            </div>
+          </div>
+
+          <div class="col">
+            <form onsubmit="event.preventDefault(); alert('Message Sent!');">
+              <h3 style="color: white; margin-bottom: 20px;">Send us a Message</h3>
+              <div class="form-group">
+                <label style="color: white;">Your Name</label>
+                <input type="text" class="form-control" placeholder="John Doe" required>
+              </div>
+              <div class="form-group">
+                <label style="color: white;">Email Address</label>
+                <input type="email" class="form-control" placeholder="you@example.com" required>
+              </div>
+              <div class="form-group">
+                <label style="color: white;">Message</label>
+                <textarea class="form-control" rows="5" placeholder="How can we help you?" required></textarea>
+              </div>
+              <button type="submit" class="btn-gradient btn-block">Send Message</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-content">
+      <div class="footer-section">
+        <h3>Tourism</h3>
+        <p>Explore the world with us. We provide the best travel experiences to make your journey unforgettable.</p>
+        <div class="social-links mt-3">
+          <a href="#"><i class="fab fa-facebook-f"></i></a>
+          <a href="#"><i class="fab fa-twitter"></i></a>
+          <a href="#"><i class="fab fa-instagram"></i></a>
+          <a href="#"><i class="fab fa-linkedin-in"></i></a>
+        </div>
+      </div>
+
+      <div class="footer-section">
+        <h3>Quick Links</h3>
+        <ul class="footer-links">
+          <li><a href="#" onclick="display('sectionHome'); return false;">Home</a></li>
+          <li><a href="#" onclick="display('sectionAbout'); return false;">About Us</a></li>
+          <li><a href="#" onclick="display('sectionFavouritePlaces'); return false;">Destinations</a></li>
+          <li><a href="#" onclick="display('sectionContact'); return false;">Contact</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-section">
+        <h3>Contact Info</h3>
+        <ul class="footer-links">
+          <li><i class="fas fa-map-marker-alt mr-2"></i> New Delhi, India</li>
+          <li><i class="fas fa-phone mr-2"></i> +91 98765 43210</li>
+          <li><i class="fas fa-envelope mr-2"></i> info@tourism.com</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>&copy; 2024 Tourism. All Rights Reserved.</p>
+    </div>
+  </footer>
+
+  <!-- Section: Interactive Map -->
+  <section id="sectionMap" class="d-none fade-in">
+    <div class="content-container">
+      <h2 class="section-title">Explore Locations</h2>
+      <div class="glass-card" style="padding: 10px;">
+        <div id="map"></div>
+      </div>
+      <button class="btn-outline mt-5" onclick="display('sectionHome')">Back to Home</button>
+    </div>
+  </section>
+
+  <!-- Universal Info Modal -->
+  <div id="infoModal" class="modal-backdrop d-none" onclick="if(event.target === this) closeModal()">
+    <div class="modal-glass-card">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modalTitle">Info</h3>
+        <button class="modal-close" onclick="closeModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="modalBody">
+        <!-- Content injected via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <!-- Vanilla JS Functionality -->
+  <script>
+    // --- Data for New Features ---
+    const placesData = [
+      { name: 'Taj Mahal', lat: 27.1751, lng: 78.0421, temp: 28, condition: 'Sunny' },
+      { name: 'Golden Temple', lat: 31.6200, lng: 74.8765, temp: 24, condition: 'Clear Sky' },
+      { name: 'Mysore Palace', lat: 12.3051, lng: 76.6551, temp: 26, condition: 'Partly Cloudy' },
+      { name: 'Varanasi Temple', lat: 25.3176, lng: 82.9739, temp: 30, condition: 'Humid' },
+      { name: 'Haridwar', lat: 29.9457, lng: 78.1642, temp: 25, condition: 'Sunny' },
+      { name: 'Kerala Backwaters', lat: 9.4981, lng: 76.3388, temp: 29, condition: 'Rainy' },
+      { name: 'Jaipur', lat: 26.9124, lng: 75.7873, temp: 32, condition: 'Hot' },
+      { name: 'Ladakh', lat: 34.1526, lng: 77.5770, temp: 8, condition: 'Snowy' }
+    ];
+
+    // --- Wishlist Logic ---
+    function toggleWishlist(placeName, event) {
+      event.stopPropagation(); // prevent card click
+      const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+      if (!isLoggedIn) {
+        alert("Please login to save places!");
+        window.location.href = 'login.html';
+        return;
+      }
+
+      let wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
+      if (wishlist.includes(placeName)) {
+        wishlist = wishlist.filter(p => p !== placeName);
+        alert(placeName + " removed from wishlist.");
+      } else {
+        wishlist.push(placeName);
+        alert(placeName + " added to wishlist!");
+      }
+      localStorage.setItem('wishlist', JSON.stringify(wishlist));
+      updateWishlistUI();
+    }
+
+    function updateWishlistUI() {
+      const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
+      document.querySelectorAll('.wishlist-btn').forEach(btn => {
+        const placeName = btn.getAttribute('onclick').match(/'([^']+)'/)[1];
+        if (wishlist.includes(placeName)) {
+          btn.classList.add('active');
+          btn.innerHTML = '<i class="fas fa-heart"></i>';
+        } else {
+          btn.classList.remove('active');
+          btn.innerHTML = '<i class="far fa-heart"></i>';
+        }
+      });
+    }
+
+    // --- Weather Logic (Simulated) ---
+    function getWeatherHTML(placeName) {
+      const place = placesData.find(p => p.name === placeName) || { temp: 25, condition: 'Sunny' };
+      let icon = 'fa-sun';
+      if (place.condition.includes('Cloud')) icon = 'fa-cloud';
+      if (place.condition.includes('Rain')) icon = 'fa-cloud-showers-heavy';
+      if (place.condition.includes('Snow')) icon = 'fa-snowflake';
+
+      return `
+        <div class="weather-widget">
+          <i class="fas ${icon} weather-icon"></i>
+          <div class="weather-info">
+            <h4>${place.temp}°C ${place.condition}</h4>
+            <p>Current Weather at ${placeName}</p>
+          </div>
+        </div>
+      `;
+    }
+
+    // --- Reviews Logic ---
+    function getReviewsHTML(placeName) {
+      // We generate unique IDs for the form inputs based on placeName
+      const safeName = placeName.replace(/\s+/g, '');
+      return `
+            <div class="review-section">
+                <h3>User Reviews</h3>
+                <div id="reviewsList-${safeName}" class="mb-4">
+                    <!-- Reviews will be loaded here -->
+                </div>
+                
+                <div class="glass-card" style="padding: 20px; background: rgba(255,255,255,0.05);">
+                    <h4>Leave a Review</h4>
+                    <div class="form-group">
+                        <label>Rating:</label>
+                        <select id="rating-${safeName}" class="form-control" style="background: rgba(0,0,0,0.3); color: white; border: none;">
+                            <option value="5">⭐⭐⭐⭐⭐ (Excellent)</option>
+                            <option value="4">⭐⭐⭐⭐ (Good)</option>
+                            <option value="3">⭐⭐⭐ (Average)</option>
+                            <option value="2">⭐⭐ (Poor)</option>
+                            <option value="1">⭐ (Terrible)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <textarea id="comment-${safeName}" class="form-control" rows="3" placeholder="Share your experience..." style="background: rgba(0,0,0,0.3); color: white; border: none;"></textarea>
+                    </div>
+                    <button class="btn-gradient btn-sm" onclick="submitReview('${placeName}')">Submit Review</button>
+                </div>
+            </div>
+        `;
+    }
+
+    function submitReview(placeName) {
+      const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+      if (!isLoggedIn) {
+        alert("Please login to leave a review.");
+        window.location.href = 'login.html';
+        return;
+      }
+
+      const safeName = placeName.replace(/\s+/g, '');
+      const rating = document.getElementById(`rating-${safeName}`).value;
+      const comment = document.getElementById(`comment-${safeName}`).value;
+      const username = localStorage.getItem('username') || 'User';
+
+      if (!comment) {
+        alert("Please write a comment.");
+        return;
+      }
+
+      const review = {
+        user: username,
+        rating: parseInt(rating),
+        comment: comment,
+        date: new Date().toLocaleDateString()
+      };
+
+      const reviews = JSON.parse(localStorage.getItem(`reviews_${placeName}`) || '[]');
+      reviews.unshift(review); // Add to top
+      localStorage.setItem(`reviews_${placeName}`, JSON.stringify(reviews));
+
+      // Clear form
+      document.getElementById(`comment-${safeName}`).value = '';
+
+      // Refresh list
+      loadReviews(placeName);
+      alert("Review submitted!");
+    }
+
+    function loadReviews(placeName) {
+      const safeName = placeName.replace(/\s+/g, '');
+      const container = document.getElementById(`reviewsList-${safeName}`);
+      if (!container) return;
+
+      const reviews = JSON.parse(localStorage.getItem(`reviews_${placeName}`) || '[]');
+
+      if (reviews.length === 0) {
+        container.innerHTML = '<p style="color: #ccc; font-style: italic;">No reviews yet. Be the first!</p>';
+        return;
+      }
+
+      container.innerHTML = reviews.map(r => `
+            <div class="review-card">
+                <div style="display: flex; justify-content: space-between;">
+                    <strong>${r.user}</strong>
+                    <span style="color: #ffd700;">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</span>
+                </div>
+                <p style="margin-top: 5px; margin-bottom: 0;">${r.comment}</p>
+                <small style="color: #aaa;">${r.date}</small>
+            </div>
+        `).join('');
+    }
+
+    // --- Map Logic ---
+    let mapInitialized = false;
+    let map;
+
+    function initMap() {
+      if (mapInitialized) return;
+
+      // Slightly delayed to ensure container is visible
+      setTimeout(() => {
+        map = L.map('map').setView([20.5937, 78.9629], 5); // Center of India
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        placesData.forEach(place => {
+          L.marker([place.lat, place.lng])
+            .addTo(map)
+            .bindPopup(`<b>${place.name}</b><br>${place.temp}°C, ${place.condition}`);
+        });
+
+        mapInitialized = true;
+      }, 300);
+    }
+
+    // --- Injection Logic ---
+    // Inject Weather and Reviews into existing Detail sections on load
+    document.addEventListener('DOMContentLoaded', () => {
+      // Target all detail sections
+      // We know the IDs: detailTajMahal, detailGoldenTemple, etc.
+      // And we need to map them to the proper "Place Name" for our logic.
+      const detailMap = {
+        'detailTajMahal': 'Taj Mahal',
+        'detailGoldenTemple': 'Golden Temple',
+        'detailMysore': 'Mysore Palace',
+        'detailVaranasi': 'Varanasi Temple',
+        'detailHaridwar': 'Haridwar',
+        'detailKerala': 'Kerala Backwaters',
+        'detailJaipur': 'Jaipur',
+        'detailLadakh': 'Ladakh'
+      };
+
+      for (const [id, name] of Object.entries(detailMap)) {
+        const section = document.getElementById(id);
+        if (section) {
+          const contentDiv = section.querySelector('.detail-content');
+          if (contentDiv) {
+            // Inject Weather at the top of content
+            const weatherHTML = getWeatherHTML(name);
+            const overviewP = contentDiv.querySelector('.lead');
+            if (overviewP) {
+              overviewP.insertAdjacentHTML('afterend', weatherHTML);
+            } else {
+              contentDiv.insertAdjacentHTML('afterbegin', weatherHTML);
+            }
+
+            // Inject Reviews at the bottom of content
+            const reviewsHTML = getReviewsHTML(name);
+            contentDiv.insertAdjacentHTML('beforeend', reviewsHTML);
+
+            // Load initial reviews
+            loadReviews(name);
+          }
+        }
+      }
+
+      // Init Wishlist UI
+      updateWishlistUI();
+    });
+
+    // Navigation Logic
+    // Modified to handle Map
+    function display(sectionId) {
+      const sections = document.querySelectorAll('section');
+      sections.forEach(sec => sec.classList.add('d-none'));
+
+      const target = document.getElementById(sectionId);
+      if (target) {
+        target.classList.remove('d-none');
+        // We use a clean fade-in class
+        target.classList.remove('fade-in');
+        void target.offsetWidth; // trigger reflow to restart animation
+        target.classList.add('fade-in');
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        // Init map if section is map
+        if (sectionId === 'sectionMap') {
+          initMap();
+          // Trigger resize after a small delay to handle transition
+          setTimeout(() => {
+            if (map) map.invalidateSize();
+          }, 100);
+        }
+      }
+    }
+
+    // Carousel Logic
+    document.addEventListener('DOMContentLoaded', () => {
+      const carousels = document.querySelectorAll('.custom-carousel');
+
+      carousels.forEach(carousel => {
+        const track = carousel.querySelector('.carousel-track');
+        const slides = Array.from(track.children);
+        const nextBtn = carousel.querySelector('.next-btn');
+        const prevBtn = carousel.querySelector('.prev-btn');
+        let currentIndex = 0;
+
+        function updateSlide() {
+          track.style.transform = `translateX(-${currentIndex * 100}%)`;
+        }
+
+        nextBtn.addEventListener('click', () => {
+          currentIndex = (currentIndex + 1) % slides.length;
+          updateSlide();
+        });
+
+        prevBtn.addEventListener('click', () => {
+          currentIndex = (currentIndex - 1 + slides.length) % slides.length;
+          updateSlide();
+        });
+
+        // Auto-play (Optional, remove if not wanted)
+        setInterval(() => {
+          currentIndex = (currentIndex + 1) % slides.length;
+          updateSlide();
+        }, 5000);
+      });
+    });
+
+    // Auth Logic
+    function handleStartTrip(e) {
+      e.preventDefault();
+      const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+      if (isLoggedIn) {
+        window.location.href = 'form for trip/index.html';
+      } else {
+        alert("Please login first to plan your trip.");
+        window.location.href = 'login.html';
+      }
+    }
+
+    function checkAuth() {
+      const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+      const username = localStorage.getItem('username') || 'User';
+      const loginLink = document.getElementById('loginLink');
+      const userProfile = document.getElementById('userProfile');
+
+      // Update DOM elements
+      const userIcon = document.querySelector('.user-icon');
+      let userNameSpan = document.querySelector('.user-name');
+
+      // If .user-name span doesn't exist, create it inside the profile container (only once)
+      if (!userNameSpan && userProfile) {
+        userNameSpan = document.createElement('span');
+        userNameSpan.className = 'user-name ml-2'; // using ml-2 helper if available or inline styles
+        userNameSpan.style.marginLeft = '10px';
+        userProfile.appendChild(userNameSpan);
+      }
+
+      if (isLoggedIn) {
+        if (loginLink) loginLink.classList.add('d-none');
+        if (userProfile) userProfile.classList.remove('d-none');
+
+        // Update Content
+        if (userIcon) userIcon.textContent = username.charAt(0).toUpperCase();
+        if (userNameSpan) userNameSpan.textContent = username;
+
+      } else {
+        if (loginLink) loginLink.classList.remove('d-none');
+        if (userProfile) userProfile.classList.add('d-none');
+      }
+    }
+
+    function toggleMenu() {
+      const menu = document.getElementById('profileMenu');
+      if (menu) menu.classList.toggle('active');
+    }
+
+    function logout() {
+      localStorage.removeItem('isLoggedIn');
+      window.location.reload();
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      const profile = document.getElementById('userProfile');
+      const menu = document.getElementById('profileMenu');
+      if (profile && !profile.contains(e.target) && menu) {
+        menu.classList.remove('active');
+      }
+    });
+
+    // Run check on load
+    checkAuth();
+
+    // Search Logic
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase();
+
+        // Ensure we are viewing the places section when searching
+        if (query.length > 0) {
+          const placesSection = document.getElementById('sectionFavouritePlaces');
+          if (placesSection.classList.contains('d-none')) {
+            display('sectionFavouritePlaces');
+          }
+        }
+
+        const cards = document.querySelectorAll('.place-card');
+        cards.forEach(card => {
+          const titleElement = card.querySelector('h3');
+          if (titleElement) {
+            const title = titleElement.textContent.toLowerCase();
+            if (title.includes(query)) {
+              card.style.display = ''; // Show
+            } else {
+              card.style.display = 'none'; // Hide
+            }
+          }
+        });
+      });
+    }
+
+    // Profile Info Logic
+    const modalBackdrop = document.getElementById('infoModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+
+    function closeModal() {
+      if (modalBackdrop) {
+        modalBackdrop.classList.remove('show');
+        setTimeout(() => {
+          modalBackdrop.classList.add('d-none');
+        }, 300); // Wait for transition
+      }
+    }
+
+    async function showProfileInfo(type) {
+      if (!modalBackdrop) return;
+
+      let title = '';
+      let content = '<div class="text-center"><p>Loading...</p></div>';
+
+      const token = localStorage.getItem('token');
+
+      // Show modal with loading state first
+      modalTitle.textContent = 'Loading...';
+      modalBody.innerHTML = content;
+
+      modalBackdrop.classList.remove('d-none');
+      // Small timeout to allow d-none removal to register
+      setTimeout(() => {
+        modalBackdrop.classList.add('show');
+      }, 10);
+
+      // Close profile menu
+      const menu = document.getElementById('profileMenu');
+      if (menu) menu.classList.remove('active');
+
+      switch (type) {
+        case 'Details':
+          title = 'User Details';
+          if (token) {
+            try {
+              // Try to get from localStorage first (mock mode)
+              const localUser = JSON.parse(localStorage.getItem('currentUser'));
+              if (localUser) {
+                const user = localUser;
+                content = `
+                        <div class="text-center mb-4">
+                          <div class="user-icon" style="width: 80px; height: 80px; font-size: 2rem; margin: 0 auto;">${user.username ? user.username.charAt(0).toUpperCase() : 'U'}</div>
+                          <h3 class="mt-3">${user.fullName || user.username}</h3>
+                          <p>${user.username}</p>
+                        </div>
+                        <div class="info-grid" style="grid-template-columns: 1fr;">
+                           <div><strong>Email:</strong> ${user.email}</div>
+                           <div><strong>Member Since:</strong> ${new Date(user.createdAt).toLocaleDateString()}</div>
+                           <div><strong>Last Login:</strong> ${localStorage.getItem('loginTime') || 'Just now'}</div>
+                        </div>
+                      `;
+              } else {
+                // Fallback to API if we had one (preserving original structure just in case)
+                const res = await fetch('/api/user-profile', {
+                  headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (res.ok) {
+                  const user = await res.json();
+                  content = `
+                        <div class="text-center mb-4">
+                          <div class="user-icon" style="width: 80px; height: 80px; font-size: 2rem; margin: 0 auto;">${user.username ? user.username.charAt(0).toUpperCase() : 'U'}</div>
+                          <h3 class="mt-3">${user.fullName || user.username}</h3>
+                          <p>${user.username}</p>
+                        </div>
+                        <div class="info-grid" style="grid-template-columns: 1fr;">
+                           <div><strong>Email:</strong> ${user.email}</div>
+                           <div><strong>Member Since:</strong> ${new Date(user.createdAt).toLocaleDateString()}</div>
+                            <div><strong>Last Login:</strong> ${localStorage.getItem('loginTime') || 'Just now'}</div>
+                        </div>
+                      `;
+                } else {
+                  content = '<p class="text-center">Failed to load profile. Please login again.</p>';
+                }
+              }
+            } catch (e) {
+              content = '<p class="text-center">Error loading profile.</p>';
+            }
+          } else {
+            content = '<p class="text-center">Please login to view details.</p>';
+          }
+          break;
+
+        case 'Trips':
+          title = 'Previous Trips';
+          if (token) {
+            try {
+              // Mock trips from localStorage
+              const trips = JSON.parse(localStorage.getItem('myTrips') || '[]');
+
+              if (trips.length === 0) {
+                // Try API if empty locally, or just show empty
+                const res = await fetch('/api/my-trips', {
+                  headers: { 'Authorization': 'Bearer ' + token }
+                }).then(r => r.ok ? r.json() : []).catch(() => []);
+
+                if (res.length > 0) {
+                  // Use API trips
+                  content = res.map(trip => `
+                            <div class="modal-list-item">
+                              <div>
+                                <strong>${trip.destination}</strong> (from ${trip.from})<br>
+                                <small>${new Date(trip.createdAt).toLocaleDateString()}</small>
+                              </div>
+                              <span style="color: ${trip.status === 'Completed' ? 'green' : 'orange'};">${trip.status || 'Pending'}</span>
+                            </div>
+                          `).join('');
+                } else {
+                  content = '<p class="text-center">No trips booked yet.</p>';
+                }
+              } else {
+                content = trips.map(trip => `
+                            <div class="modal-list-item">
+                              <div>
+                                <strong>${trip.destination}</strong> (from ${trip.from})<br>
+                                <small>${new Date(trip.createdAt).toLocaleDateString()}</small>
+                              </div>
+                              <span style="color: ${trip.status === 'Completed' ? 'green' : 'orange'};">${trip.status || 'Pending'}</span>
+                            </div>
+                          `).join('');
+              }
+            } catch (e) {
+              content = '<p class="text-center">Error loading trips.</p>';
+            }
+          } else {
+            content = '<p class="text-center">Please login to view trips.</p>';
+          }
+          break;
+
+        case 'History':
+          title = 'Activity History';
+          content = `
+            <ul style="list-style: none; padding: 0;">
+              <li style="margin-bottom: 10px; border-left: 2px solid #ddd; padding-left: 10px;">
+                <strong>Logged In</strong> - <small>${localStorage.getItem('loginTime') || 'Just now'}</small>
+              </li>
+            </ul>
+          `;
+          break;
+
+        case 'Wishlist':
+          title = 'Saved Places';
+          const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
+          if (wishlist.length === 0) {
+            content = '<p class="text-center">No places saved yet.</p>';
+          } else {
+            content = wishlist.map(place => {
+              let idSuffix = place.replace(/\s+/g, '');
+              if (idSuffix === 'VaranasiTemple') idSuffix = 'Varanasi';
+              if (idSuffix === 'MysorePalace') idSuffix = 'Mysore';
+              if (idSuffix === 'KeralaBackwaters') idSuffix = 'Kerala';
+
+              return `
+              <div class="modal-list-item" style="cursor: pointer;" onclick="closeModal(); display('detail${idSuffix}');">
+                 <div><strong>${place}</strong></div>
+                 <i class="fas fa-chevron-right"></i>
+              </div>
+            `}).join('');
+          }
+          break;
+
+        case 'Referrals':
+          title = 'Refer & Earn';
+          content = `
+            <p>Share your code with friends and earn 10% off your next trip when they sign up!</p>
+            <div class="referral-box" onclick="navigator.clipboard.writeText('TOUR2026'); alert('Copied!')">
+              TOUR2026 <i class="far fa-copy" style="margin-left: 10px;"></i>
+            </div>
+            <p class="text-center mt-3"><small>Tap box to copy</small></p>
+            <div class="mt-4">
+              <strong>Your Stats:</strong>
+              <div class="d-flex justify-content-between mt-2">
+                <span>Refers: 0</span>
+                <span>Earned: ₹0</span>
+              </div>
+            </div>
+          `;
+          break;
+      }
+
+      modalTitle.textContent = title;
+      modalBody.innerHTML = content;
+    }
+  </script>
+</body>
+
+</html>

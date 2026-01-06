@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Start Trip | Tourism</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Poppins:wght@300;400;500;600&display=swap"
+    rel="stylesheet">
+  <!-- Removed Bootstrap -->
+  <link rel="stylesheet" href="../style.css?v=4">
+  <style>
+    /* Input Validation Styles */
+    .form-control.invalid-input {
+      border: 2px solid #ff4757 !important;
+      /* Red */
+      box-shadow: 0 0 5px rgba(255, 71, 87, 0.5);
+    }
+
+    .form-control.valid-input {
+      border: 2px solid #2ed573 !important;
+      /* Green */
+      box-shadow: 0 0 5px rgba(46, 213, 115, 0.5);
+    }
+
+    .validation-msg {
+      font-size: 0.8rem;
+      color: #ff4757;
+      margin-top: 5px;
+      display: none;
+    }
+
+    .invalid-input+.validation-msg {
+      display: block;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="form-wrapper">
+    <div class="form-glass-card">
+      <a href="../index.html" class="form-close-btn">&times;</a>
+      <div class="form-header">
+        <h2>Plan Your Trip</h2>
+        <p>Fill in the details to start your adventure.</p>
+      </div>
+
+      <form onsubmit="handleBooking(event)">
+        <div class="row">
+          <div class="col">
+            <div class="form-group">
+              <label>First Name</label>
+              <input type="text" id="firstName" class="form-control" required>
+            </div>
+          </div>
+          <div class="col">
+            <div class="form-group">
+              <label>Last Name</label>
+              <input type="text" id="lastName" class="form-control" required>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Phone Number</label>
+          <input type="tel" id="phone" class="form-control" placeholder="+91 ..." required>
+          <span class="validation-msg">Must be exactly 10 digits</span>
+        </div>
+
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="email" class="form-control" placeholder="you@example.com" required>
+          <span class="validation-msg">Please enter a valid email</span>
+        </div>
+
+        <div class="row">
+          <div class="col">
+            <div class="form-group">
+              <label>From</label>
+              <input type="text" id="from" class="form-control" placeholder="City" required>
+            </div>
+          </div>
+          <div class="col">
+            <div class="form-group">
+              <label>Destination</label>
+              <input type="text" id="destination" class="form-control" list="destinations" placeholder="Choose a place"
+                required>
+              <datalist id="destinations">
+                <option value="Taj Mahal">
+                <option value="Golden Temple">
+                <option value="Mysore Palace">
+                <option value="Varanasi Temple">
+                <option value="Haridwar">
+                <option value="Kerala Backwaters">
+                <option value="Jaipur">
+                <option value="Ladakh">
+                <option value="Goa Beaches">
+                <option value="Hampi">
+                <option value="Andaman Islands">
+                <option value="Udaipur">
+                <option value="Rishikesh">
+              </datalist>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Pickup Address</label>
+          <textarea id="pickupAddress" class="form-control" rows="3" required style="resize: vertical;"></textarea>
+        </div>
+
+        <button type="submit" class="btn-gradient btn-block mt-4">Submit Request</button>
+
+        <div class="text-center mt-3">
+          <a href="../index.html" style="color: #999; font-size: 0.8rem; text-decoration: none;">Back to Home</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Real-time Validation Logic
+    document.addEventListener('DOMContentLoaded', () => {
+      const phoneInput = document.getElementById('phone');
+      const emailInput = document.getElementById('email');
+
+      phoneInput.addEventListener('input', validatePhone);
+      emailInput.addEventListener('input', validateEmail);
+
+      function validatePhone() {
+        const val = phoneInput.value;
+        const isValid = /^\d{10}$/.test(val);
+        updateClass(phoneInput, isValid);
+        return isValid;
+      }
+
+      function validateEmail() {
+        const val = emailInput.value;
+        const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+        updateClass(emailInput, isValid);
+        return isValid;
+      }
+
+      function updateClass(elem, isValid) {
+        if (elem.value.length === 0) {
+          elem.classList.remove('valid-input', 'invalid-input');
+          return;
+        }
+        if (isValid) {
+          elem.classList.add('valid-input');
+          elem.classList.remove('invalid-input');
+        } else {
+          elem.classList.add('invalid-input');
+          elem.classList.remove('valid-input');
+        }
+      }
+    });
+
+    async function handleBooking(e) {
+      e.preventDefault();
+
+      const phoneInput = document.getElementById('phone');
+      const emailInput = document.getElementById('email');
+
+      // Final check before submit
+      const isPhoneValid = /^\d{10}$/.test(phoneInput.value);
+      const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value);
+
+      if (!isPhoneValid || !isEmailValid) {
+        alert("Please fix the errors in red before submitting.");
+        if (!isPhoneValid) phoneInput.focus();
+        else if (!isEmailValid) emailInput.focus();
+        return;
+      }
+
+      const firstName = document.getElementById('firstName').value;
+      const lastName = document.getElementById('lastName').value;
+      const phone = phoneInput.value;
+      const email = emailInput.value;
+      const from = document.getElementById('from').value;
+      const destination = document.getElementById('destination').value;
+      const pickupAddress = document.getElementById('pickupAddress').value;
+
+      try {
+        const trip = {
+          firstName,
+          lastName,
+          phone,
+          email,
+          from,
+          destination,
+          pickupAddress,
+          createdAt: new Date().toISOString(),
+          status: 'Pending'
+        };
+
+        const myTrips = JSON.parse(localStorage.getItem('myTrips') || '[]');
+        myTrips.push(trip);
+        localStorage.setItem('myTrips', JSON.stringify(myTrips));
+
+        alert('Trip booked successfully!');
+        window.location.href = '../success.html';
+      } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again later.');
+      }
+    }
+  </script>
+</body>
+
+</html>
