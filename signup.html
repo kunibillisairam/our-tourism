@@ -78,34 +78,21 @@
                 return;
             }
 
-            // Simulate API call / Client-side registration
             try {
-                // Get existing users
-                const users = JSON.parse(localStorage.getItem('users') || '[]');
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ fullName, username, email, password })
+                });
 
-                // Check if user exists
-                const existingUser = users.find(u => u.username === username || u.email === email);
-                if (existingUser) {
-                    alert('User with this email or username already exists');
-                    return;
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert('Account created successfully! Please login.');
+                    window.location.href = 'login.html';
+                } else {
+                    alert(data.message || 'Registration failed');
                 }
-
-                // Create new user
-                const newUser = {
-                    fullName,
-                    username,
-                    email,
-                    password, // In a real app, never store plain text passwords!
-                    createdAt: new Date().toISOString()
-                };
-
-                // Save
-                users.push(newUser);
-                localStorage.setItem('users', JSON.stringify(users));
-
-                alert('Account created successfully! Please login.');
-                window.location.href = 'login.html';
-
             } catch (error) {
                 console.error('Error:', error);
                 alert('An error occurred. Please try again later.');

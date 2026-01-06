@@ -50,18 +50,19 @@
     <script>
         async function handleLogin(e) {
             e.preventDefault();
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
+            const username = document.querySelector('input[type="text"]').value;
+            const password = document.querySelector('input[type="password"]').value;
 
             try {
-                // Get existing users
-                const users = JSON.parse(localStorage.getItem('users') || '[]');
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
 
-                // Find user
-                const user = users.find(u => u.username === username && u.password === password);
+                const data = await response.json();
 
-                if (user) {
-                    // Save info
+                if (response.ok) {
                     localStorage.setItem('isLoggedIn', 'true');
                     localStorage.setItem('username', user.username);
                     localStorage.setItem('token', 'mock-token-' + new Date().getTime()); // Mock token

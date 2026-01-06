@@ -182,26 +182,38 @@
       const from = document.getElementById('from').value;
       const destination = document.getElementById('destination').value;
       const pickupAddress = document.getElementById('pickupAddress').value;
+      const token = localStorage.getItem('token');
 
       try {
-        const trip = {
-          firstName,
-          lastName,
-          phone,
-          email,
-          from,
-          destination,
-          pickupAddress,
-          createdAt: new Date().toISOString(),
-          status: 'Pending'
-        };
+        const response = await fetch('/api/book-trip', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': token ? `Bearer ${token}` : ''
+          },
+          body: JSON.stringify({
+            firstName, lastName, phone, email, from, destination, pickupAddress, token
+          })
+        });
 
-        const myTrips = JSON.parse(localStorage.getItem('myTrips') || '[]');
-        myTrips.push(trip);
-        localStorage.setItem('myTrips', JSON.stringify(myTrips));
+        const data = await response.json();
 
-        alert('Trip booked successfully!');
-        window.location.href = '../success.html';
+        if (response.ok) {
+          // Also save locally for "mock" feel in case API issues
+          const trip = {
+            firstName, lastName, phone, email, from, destination, pickupAddress,
+            createdAt: new Date().toISOString(),
+            status: 'Pending'
+          };
+          const myTrips = JSON.parse(localStorage.getItem('myTrips') || '[]');
+          myTrips.push(trip);
+          localStorage.setItem('myTrips', JSON.stringify(myTrips));
+
+          alert('Trip booked successfully!');
+          window.location.href = '../success.html';
+        } else {
+          alert(data.message || 'Booking failed');
+        }
       } catch (error) {
         console.error('Error:', error);
         alert('An error occurred. Please try again later.');
