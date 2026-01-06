@@ -8,8 +8,8 @@ const User = require('./models/User');
 const Trip = require('./models/Trip');
 
 const app = express();
-const PORT = 5000;
-const MONGO_URI = 'mongodb://localhost:27017/tourism'; // Update this if using MongoDB Atlas
+const PORT = process.env.PORT || 5000;
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/tourism'; // Update this if using MongoDB Atlas
 
 // Middleware
 app.use(cors());

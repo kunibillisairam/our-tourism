@@ -1,0 +1,15 @@
+{
+    "version": 2,
+    "builds": [
+        {
+            "src": "*.html",
+            "use": "@vercel/static"
+        }
+    ],
+    "rewrites": [
+        {
+            "source": "/api/:match*",
+            "destination": "https://<YOUR-RENDER-APP-NAME>.onrender.com/api/:match*"
+        }
+    ]
+}
