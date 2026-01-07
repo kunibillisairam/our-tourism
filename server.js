@@ -172,7 +172,7 @@ app.get('/api/my-trips', async (req, res) => {
 
 
 // Catch-all route for SPA (if needed, but simple static serving works for these HTML files)
-app.get('*', (req, res) => {
+app.get(/^(.*)$/, (req, res) => {
     // If request accepts html
     if (req.accepts('html')) {
         res.sendFile(path.join(__dirname, 'index.html'));

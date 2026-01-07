@@ -47,6 +47,12 @@
         </div>
     </div>
 
+    <!-- Toast Notification -->
+    <div id="toast" class="toast-notification">
+        <div class="toast-icon">✓</div>
+        <span id="toast-message" class="toast-message">Success</span>
+    </div>
+
     <script>
         async function handleLogin(e) {
             e.preventDefault();
@@ -64,20 +70,35 @@
 
                 if (response.ok) {
                     localStorage.setItem('isLoggedIn', 'true');
-                    localStorage.setItem('username', user.username);
-                    localStorage.setItem('token', 'mock-token-' + new Date().getTime()); // Mock token
-                    localStorage.setItem('currentUser', JSON.stringify(user)); // Store current user details
-                    localStorage.setItem('loginTime', new Date().toLocaleString()); // Save login time
+                    localStorage.setItem('username', data.user.username);
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('currentUser', JSON.stringify(data.user));
+                    localStorage.setItem('loginTime', new Date().toLocaleString());
 
-                    alert('Login Successful!');
-                    window.location.href = 'index.html';
+                    showToast('Login Successful! Redirecting...');
+
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 2000);
                 } else {
-                    alert('Invalid credentials');
+                    alert(data.message || 'Invalid credentials');
                 }
             } catch (error) {
                 console.error('Error:', error);
                 alert('An error occurred. Please try again later.');
             }
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const msg = document.getElementById('toast-message');
+            msg.textContent = message;
+            toast.classList.add('show');
+
+            // Auto hide after 3 seconds (optional backup)
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3500);
         }
     </script>
 
